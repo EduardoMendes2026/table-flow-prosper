@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 import Mesas from "./pages/Mesas";
 import MesaDetalhe from "./pages/MesaDetalhe";
