@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 import Mesas from "./pages/Mesas";
 import MesaDetalhe from "./pages/MesaDetalhe";
@@ -48,6 +49,7 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
             <Route path="/mesas/:id" element={<ProtectedRoute><MesaDetalhe /></ProtectedRoute>} />
