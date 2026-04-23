@@ -29,15 +29,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUserRole = async (userId: string) => {
+    // Fetch ALL roles and prioritize admin_master > dono_restaurante > funcionario
     const { data } = await supabase
       .from("user_roles")
       .select("role, restaurant_id, display_name")
-      .eq("user_id", userId)
-      .limit(1)
-      .single();
+      .eq("user_id", userId);
 
-    if (data) {
-      setUserRole(data as UserRole);
+    if (data && data.length > 0) {
+      const priority: AppRole[] = ["admin_master", "dono_restaurante", "funcionario"];
+      const sorted = [...data].sort(
+        (a, b) => priority.indexOf(a.role as AppRole) - priority.indexOf(b.role as AppRole)
+      );
+      setUserRole(sorted[0] as UserRole);
     }
   };
 
