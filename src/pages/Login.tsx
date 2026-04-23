@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { UtensilsCrossed, User, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Login by email
@@ -20,12 +19,6 @@ export default function Login() {
   // Login by username (employee)
   const [loginUsername, setLoginUsername] = useState("");
   const [loginUserPassword, setLoginUserPassword] = useState("");
-
-  // Signup
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupName, setSignupName] = useState("");
-  const [signupRestaurant, setSignupRestaurant] = useState("");
 
   // Login mode
   const [loginMode, setLoginMode] = useState<"email" | "username">("email");
@@ -65,23 +58,6 @@ export default function Login() {
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (signupPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-    setLoading(true);
-    try {
-      await signUp(signupEmail, signupPassword, signupRestaurant, signupName);
-      toast.success("Conta criada! Verifique seu email para confirmar.");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao criar conta");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
@@ -94,18 +70,12 @@ export default function Login() {
         </div>
 
         <Card className="glass-card">
-          <Tabs defaultValue="login">
-            <CardHeader className="pb-2">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-              </TabsList>
-            </CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Bem-vindo de volta</CardTitle>
+            <CardDescription>Acesse sua conta</CardDescription>
+          </CardHeader>
 
-            <CardContent>
-              <TabsContent value="login">
-                <CardTitle className="mb-1 text-lg">Bem-vindo de volta</CardTitle>
-                <CardDescription className="mb-4">Acesse sua conta</CardDescription>
+          <CardContent>
 
                 {/* Toggle login mode */}
                 <div className="mb-4 flex gap-2">
@@ -166,35 +136,7 @@ export default function Login() {
                     </Button>
                   </form>
                 )}
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <CardTitle className="mb-1 text-lg">Criar conta</CardTitle>
-                <CardDescription className="mb-4">Teste grátis por 7 dias</CardDescription>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div>
-                    <Label htmlFor="signup-name">Seu nome</Label>
-                    <Input id="signup-name" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-restaurant">Nome do restaurante</Label>
-                    <Input id="signup-restaurant" value={signupRestaurant} onChange={(e) => setSignupRestaurant(e.target.value)} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-password">Senha</Label>
-                    <Input id="signup-password" type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Criando..." : "Criar conta grátis"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
+          </CardContent>
         </Card>
       </div>
     </div>
