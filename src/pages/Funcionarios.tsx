@@ -127,12 +127,9 @@ export default function Funcionarios() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>Nome</Label>
-                    <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nome do funcionário" />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
+                    <Label>Nome de usuário</Label>
+                    <Input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Ex: Naty" />
+                    <p className="mt-1 text-xs text-muted-foreground">O funcionário fará login com este usuário (sem email).</p>
                   </div>
                   <div>
                     <Label>Senha</Label>
