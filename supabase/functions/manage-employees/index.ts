@@ -35,12 +35,29 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === "create") {
-      const { email, password, display_name, restaurant_id } = body;
+      const { username, password, restaurant_id } = body;
       const targetRestaurantId = restaurant_id || callerRole.restaurant_id;
+
+      if (!username || !password) throw new Error("Usuário e senha são obrigatórios");
+      if (password.length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres");
+
+      // Check uniqueness of username (display_name) within the restaurant
+      const { data: existing } = await supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .ilike("display_name", username)
+        .limit(1)
+        .maybeSingle();
+      if (existing) throw new Error("Este nome de usuário já existe");
+
+      // Generate synthetic email from username (internal use only)
+      const safeUser = String(username).trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (!safeUser) throw new Error("Nome de usuário inválido");
+      const syntheticEmail = `${safeUser}.${targetRestaurantId.slice(0, 8)}@employee.local`;
 
       // Create user
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email,
+        email: syntheticEmail,
         password,
         email_confirm: true,
       });
@@ -53,7 +70,7 @@ Deno.serve(async (req) => {
           user_id: newUser.user.id,
           role: "funcionario",
           restaurant_id: targetRestaurantId,
-          display_name,
+          display_name: username,
         });
       if (roleError) throw roleError;
 
