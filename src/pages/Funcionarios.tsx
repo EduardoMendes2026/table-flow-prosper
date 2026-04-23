@@ -36,8 +36,7 @@ export default function Funcionarios() {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -54,8 +53,8 @@ export default function Funcionarios() {
   });
 
   const createEmployee = async () => {
-    if (!newEmail || !newPassword || !newName) {
-      toast.error("Preencha todos os campos");
+    if (!newUsername || !newPassword) {
+      toast.error("Preencha usuário e senha");
       return;
     }
     if (newPassword.length < 6) {
@@ -67,17 +66,15 @@ export default function Funcionarios() {
       const { data, error } = await supabase.functions.invoke("manage-employees", {
         body: {
           action: "create",
-          email: newEmail,
+          username: newUsername,
           password: newPassword,
-          display_name: newName,
           restaurant_id: restaurantId,
         },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success("Funcionário criado com sucesso!");
-      setNewName("");
-      setNewEmail("");
+      setNewUsername("");
       setNewPassword("");
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["team-roles", restaurantId] });
