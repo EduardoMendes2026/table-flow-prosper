@@ -29,6 +29,20 @@ Deno.serve(async (req) => {
     ) ?? [];
 
     for (const u of toRemove) {
+      // Find any restaurants linked to this user via user_roles and delete them (cascade removes roles)
+      const { data: linkedRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("restaurant_id")
+        .eq("user_id", u.id);
+
+      const restaurantIds = (linkedRoles || [])
+        .map((r: any) => r.restaurant_id)
+        .filter((id: string | null) => !!id);
+
+      if (restaurantIds.length > 0) {
+        await supabaseAdmin.from("restaurants").delete().in("id", restaurantIds);
+      }
+
       await supabaseAdmin.from("user_roles").delete().eq("user_id", u.id);
       await supabaseAdmin.auth.admin.deleteUser(u.id);
     }
