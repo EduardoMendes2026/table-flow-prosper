@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -21,27 +25,28 @@ Deno.serve(async (req) => {
     if (authError || !user) throw new Error("Unauthorized");
 
     // Verify caller is dono_restaurante or admin_master
-    const { data: callerRole } = await supabaseAdmin
+    const { data: callerRoles } = await supabaseAdmin
       .from("user_roles")
       .select("role, restaurant_id")
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
 
-    if (!callerRole || (callerRole.role !== "dono_restaurante" && callerRole.role !== "admin_master")) {
-      throw new Error("Access denied");
-    }
+    const ownerRole = callerRoles?.find(
+      (r: any) => r.role === "dono_restaurante" || r.role === "admin_master"
+    );
+    if (!ownerRole) throw new Error("Access denied");
 
     const body = await req.json();
     const { action } = body;
 
     if (action === "create") {
       const { username, password, restaurant_id } = body;
-      const targetRestaurantId = restaurant_id || callerRole.restaurant_id;
+      const targetRestaurantId = restaurant_id || ownerRole.restaurant_id;
+      if (!targetRestaurantId) throw new Error("Restaurante não definido");
 
       if (!username || !password) throw new Error("Usuário e senha são obrigatórios");
       if (password.length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres");
 
-      // Check uniqueness of username (display_name) within the restaurant
+      // Check uniqueness of username (display_name) globally to avoid collisions in resolve-username
       const { data: existing } = await supabaseAdmin
         .from("user_roles")
         .select("id")
