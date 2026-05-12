@@ -34,7 +34,9 @@ const ownerLinks = [
 const employeeLinks = [
   { to: "/mesas", icon: Table2, label: "Mesas" },
   { to: "/cardapio", icon: UtensilsCrossed, label: "Cardápio" },
+  { to: "/pedidos", icon: ClipboardList, label: "Pedidos" },
   { to: "/cozinha", icon: CookingPot, label: "Cozinha" },
+  { to: "/caixa", icon: DollarSign, label: "Caixa" },
 ];
 
 const adminLinks = [
