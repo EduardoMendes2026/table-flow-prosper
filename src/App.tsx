@@ -19,9 +19,9 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) {
+function ProtectedRoute({ children, ownerOnly = false }: { children: React.ReactNode; ownerOnly?: boolean }) {
+  const { user, userRole, loading } = useAuth();
+  if (loading || (user && !userRole)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -29,13 +29,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Navigate to="/login" replace />;
+  if (ownerOnly && userRole?.role === "funcionario") return <Navigate to="/mesas" replace />;
   return <>{children}</>;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) {
+    if (userRole?.role === "funcionario") return <Navigate to="/mesas" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -64,15 +68,15 @@ const App = () => (
             <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute ownerOnly><Dashboard /></ProtectedRoute>} />
             <Route path="/mesas" element={<ProtectedRoute><Mesas /></ProtectedRoute>} />
             <Route path="/mesas/:id" element={<ProtectedRoute><MesaDetalhe /></ProtectedRoute>} />
             <Route path="/cardapio" element={<ProtectedRoute><Cardapio /></ProtectedRoute>} />
             <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
             <Route path="/cozinha" element={<ProtectedRoute><Cozinha /></ProtectedRoute>} />
             <Route path="/caixa" element={<ProtectedRoute><Caixa /></ProtectedRoute>} />
-            <Route path="/funcionarios" element={<ProtectedRoute><Funcionarios /></ProtectedRoute>} />
-            <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+            <Route path="/funcionarios" element={<ProtectedRoute ownerOnly><Funcionarios /></ProtectedRoute>} />
+            <Route path="/configuracoes" element={<ProtectedRoute ownerOnly><Configuracoes /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
