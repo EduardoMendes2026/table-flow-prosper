@@ -25,13 +25,14 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Find user_role by display_name (case-insensitive)
+    // Find funcionario by display_name (case-insensitive). Only employees can log in by username.
     const { data: role, error } = await supabaseAdmin
       .from("user_roles")
       .select("user_id")
+      .eq("role", "funcionario")
       .ilike("display_name", username)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error || !role) {
       return new Response(
