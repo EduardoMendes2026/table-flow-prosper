@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { UtensilsCrossed, User, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,11 @@ export default function Login() {
 
   // Login mode
   const [loginMode, setLoginMode] = useState<"email" | "username">("email");
+
+  // Signup (restaurant only)
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +64,23 @@ export default function Login() {
     }
   };
 
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("signup-restaurant", {
+        body: { restaurantName: signupName, email: signupEmail, password: signupPassword },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Erro ao cadastrar");
+      await signIn(signupEmail, signupPassword);
+      toast.success("Restaurante cadastrado com sucesso!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao cadastrar");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
@@ -71,12 +94,18 @@ export default function Login() {
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Bem-vindo de volta</CardTitle>
-            <CardDescription>Acesse sua conta</CardDescription>
+            <CardTitle className="text-lg">Bem-vindo</CardTitle>
+            <CardDescription>Acesse ou cadastre seu restaurante</CardDescription>
           </CardHeader>
 
           <CardContent>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="mb-4 grid w-full grid-cols-2">
+                <TabsTrigger value="login">Entrar</TabsTrigger>
+                <TabsTrigger value="signup">Cadastrar Restaurante</TabsTrigger>
+              </TabsList>
 
+              <TabsContent value="login">
                 {/* Toggle login mode */}
                 <div className="mb-4 flex gap-2">
                   <Button
@@ -136,6 +165,31 @@ export default function Login() {
                     </Button>
                   </form>
                 )}
+              </TabsContent>
+
+              <TabsContent value="signup">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div>
+                    <Label htmlFor="signup-name">Nome do Restaurante</Label>
+                    <Input id="signup-name" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input id="signup-email" type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-password">Senha</Label>
+                    <Input id="signup-password" type="password" minLength={6} value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Cadastrando..." : "Cadastrar Restaurante"}
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">
+                    Apenas restaurantes podem se cadastrar. Funcionários são adicionados pelo proprietário.
+                  </p>
+                </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
